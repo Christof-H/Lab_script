@@ -196,7 +196,7 @@ def Affichage_bits_commun (list_bits):
             item +=1
     print ('-'*70)
     print ("Score du nombre de bits trop proche pour une séquence de code : ", total_commun_bits)
-    print (f"Avec {bits} bits utilisés, pour {nbrLoci} codes utilisés \n\
+    print (f"Avec {bits} bits utilisés, pour {number_Loci} codes utilisés \n\
 et une distance entre des bits en commun d'au moins {distance_inter_bit} codes")
 
 Affichage_bits_commun (best_list_bits_order)
@@ -237,13 +237,13 @@ et une distance entre des bits en commun d'au moins {distance_inter_bit} codes")
 
 #%%------BLOC 5 : Remplacement des codes qui des bits en commun----------------
 
-# A partir de l'odre de bit qui a obtenu le meilleur score. On remplacle les bits
+# A partir de l'ordre de bit qui a obtenu le meilleur score. On remplace les bits
 # avec ceux que nous n'avons pas utilisé pour générer le premier ordre (reste_from_best_list_bits_order)
      
-  
+
 # Fonction qui check les codes de bits qui ont des bits en commun et qui
 # remplace le code par un bit de la liste de bits non utilisés
-def Replace_bit (listeResteBits,ordered_list, nbrRange) :
+def Replace_bit (listeResteBits,ordered_list, nbrRange,i) :
     random.shuffle(listeResteBits)
     y=0
     while y < len(listeResteBits):
@@ -252,7 +252,7 @@ def Replace_bit (listeResteBits,ordered_list, nbrRange) :
             y +=1
             find_bit = False
         elif count_newbit == 0 :
-            print(f"Replacement de {ordered_list[i]} par {listeResteBits[y]}",'i=',i)
+            print(f"Remplacement de {ordered_list[i]} par {listeResteBits[y]}",'i=',i)
             ordered_list[i] ,listeResteBits[y] = listeResteBits[y], ordered_list[i]
             find_bit = True
             break
@@ -265,56 +265,63 @@ def Replace_bit (listeResteBits,ordered_list, nbrRange) :
 # distance_inter_bit = int(input("quelle est le nombre de codes successifs qui ne doivent \
 # pas présenter le même bit\n:"))
 
-            
-i=0            
-while i < len(best_list_bits_order):
-     # Condition pour les codes : best_list_bits_order[0] à best_list_bits_order[distance_inter_bit]        
-    if i < distance_inter_bit :
-        nbrRange =distance_inter_bit + 1
-        commun_bits = CheckBitRangeTwoWays (1, nbrRange, best_list_bits_order[i],best_list_bits_order,i)
-        if commun_bits == 0:
-            print('0 bit en commun, pas de remplacement', 'i=', i)
+def Test_and_replace (list_bits_order) :           
+    i=0            
+    while i < len(list_bits_order):
+         # Condition pour les codes : list_bits_order[0] à list_bits_order[distance_inter_bit]        
+        if i < distance_inter_bit :
+            nbrRange =distance_inter_bit + 1
+            count_bits = CheckBitRangeTwoWays (1, nbrRange, list_bits_order[i],list_bits_order,i)
+            if count_bits == 0:
+                print('0 bit en commun, pas de remplacement', 'i=', i)
+                i +=1
+            if count_bits != 0 :
+                Replace_bit (reste_from_best_list_bits_order,list_bits_order, nbrRange,i)
+                i +=1
+    # Condition pour les codes jusqu'à list_bits_order[liste totale - distance_inter_bit]        
+        elif i >= distance_inter_bit and i < (len(list_bits_order)-distance_inter_bit):
+            nbrRange =distance_inter_bit + 1
+            count_bits = CheckBitRangeOneWay (1, nbrRange, list_bits_order,i)
+            if count_bits == 0:
+                print('0 bit en commun,pas de remplacement', 'i=', i)
+                i +=1
+            if count_bits != 0 :
+                Replace_bit(reste_from_best_list_bits_order,list_bits_order,nbrRange,i)
+                i +=1
+    # condition pour les bits de fin
+        elif i >= (len(list_bits_order)-distance_inter_bit) and i != (len(list_bits_order)-1):
+            nbrRange = len(list_bits_order)-i
+            count_bits = CheckBitRangeOneWay (1,nbrRange,list_bits_order,i)
+            if count_bits == 0:
+                print('0 bit en commun,pas de remplacement', 'i=', i)
+                i +=1
+            if count_bits != 0 :
+                Replace_bit(reste_from_best_list_bits_order,list_bits_order,nbrRange,i)
+                i +=1
+        elif i == (len(list_bits_order)-1) :
+            print('0 bit en commun,pas de remplacement','i=',i)
             i +=1
-        if commun_bits != 0 :
-            Replace_bit (reste_from_best_list_bits_order,best_list_bits_order, nbrRange)
-            i +=1
-# Condition pour les codes jusqu'à best_list_bits_order[liste totale - distance_inter_bit]        
-    elif i >= distance_inter_bit and i < (len(best_list_bits_order)-distance_inter_bit):
-        nbrRange =distance_inter_bit + 1
-        commun_bits = CheckBitRangeOneWay (1, nbrRange, best_list_bits_order,i)
-        if commun_bits == 0:
-            print('0 bit en commun,pas de remplacement', 'i=', i)
-            i +=1
-        if commun_bits != 0 :
-            Replace_bit(reste_from_best_list_bits_order,best_list_bits_order,nbrRange)
-            i +=1
-# condition pour les bits de fin
-    elif i >= (len(best_list_bits_order)-distance_inter_bit) and i != (len(best_list_bits_order)-1):
-        nbrRange = len(best_list_bits_order)-i
-        commun_bits = CheckBitRangeOneWay (1,nbrRange,best_list_bits_order,i)
-        if commun_bits == 0:
-            print('0 bit en commun,pas de remplacement', 'i=', i)
-            i +=1
-        if commun_bits != 0 :
-            Replace_bit(reste_from_best_list_bits_order,best_list_bits_order,nbrRange)
-            i +=1
-    elif i == (len(best_list_bits_order)-1) :
-        print('0 bit en commun,pas de remplacement','i=',i)
-        i +=1
-print('-'*70)
-print(f"Avertissement : refaire bloc 3 si des codes ont été changé dans les \
+    print('-'*70)
+    print(f"Avertissement : refaire bloc 3 si des codes ont été changé dans les \
 {distance_inter_bit} premiers et derniers codes.")
 
+Test_and_replace (best_list_bits_order)
 
-
-rep = input("Voulez-vous relancer :\n\
-1-un affichage des bits en commun pour la nouvelle séquence de bits (taper : 1)\n\
-2-Sortir (taper : 2)\n\
-Réponse (1 ou 2) :")
-if rep == '1':
-    Affichage_bits_commun (best_list_bits_order)    
-else :
-    pass
+def Short_menu () :
+    rep = input("Voulez-vous relancer :\n\
+    1-un affichage des bits en commun pour la nouvelle séquence de bits (taper : 1)\n\
+    2-un remplacement des codes qui ont encore des bits en commun (taper : 2)\n\
+    3-Sortir (taper : 3)\n\
+Réponse (1, 2 ou 3) :")
+    if rep == '1':
+        Affichage_bits_commun (best_list_bits_order)
+        Short_menu ()
+    elif rep == '2' :
+        Test_and_replace (best_list_bits_order)
+        Short_menu ()
+    else :
+        pass
+Short_menu ()
 
 
 
