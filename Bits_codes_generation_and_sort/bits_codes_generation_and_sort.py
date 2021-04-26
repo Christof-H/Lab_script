@@ -44,6 +44,7 @@ Au final vous obtenez la meilleure séquence de codes dans la variable : best_li
 import os
 import random
 from copy import deepcopy
+import time
 
 # Fonction qui permet de comparer 2 bit codes pour révéler les bits en commun
 def NbrBitCommun (a,b):
@@ -57,8 +58,9 @@ def NbrBitCommun (a,b):
 # qui trie les codes en fonction d'un Hamming weight
 def Code_generation(n, hamming_weight):
     result = []
-    total = []
+#    total = []
     count_total = 0
+    t0 = time.time()
     for i in range(1<<n):
         s=bin(i)[2:]
         s='0'*(n-len(s))+s
@@ -70,6 +72,12 @@ def Code_generation(n, hamming_weight):
                 count += 1
         if count == hamming_weight :
             result.append(s)
+    t1 = time.time()
+    timeTotal = t1-t0
+    if int(timeTotal/60) == 0 :
+        print('Time elapsed : '+str(round(timeTotal,3))+' secondes')
+    elif int(timeTotal/60) > 0 :
+        print('Time elapsed : '+str(int(timeTotal/60))+' minutes')
     print(f"Pour {n} bits, il y a au total {count_total} codes générés.\n\
 Après un tri avec un hamming weight de {hamming_weight}, il reste {len(result)} codes.")
     return result
@@ -83,6 +91,33 @@ print ('-'*70)
 list_totalbits = Code_generation(bits,Nbr_weight)
 print ('-'*70)
 ###
+
+#Enregistrement de tous les codes pour une nombre de bits et de Hamming weight donné :
+
+# Renseigner le chemin d'accès du dossier dans lequel vous voulez sauvegarder
+# votre fichier contenant tous les codes de bits :        
+root_folder = '/home/christophe/Documents/Informatique/Python/Scripts/Bits_code_generation_Resultats'
+
+# Génère un nom de fichier en fonction des paramètres 
+file_name_Allcode = 'All_Codes_'+str(bits)+'Bit_'+str(Nbr_weight)+'HWeiht'
+
+fullFileName_Allcode=root_folder + os.sep + file_name_Allcode
+
+
+# Vérification de l'existence du répertoire pour sauvegarder le fichier  
+check_path = os.path.exists(root_folder)
+if check_path != True :
+    print ('-'*70)
+    print ("The path to save the file is not correct.")
+    print ("Please indicate the correct path in the variable 'root_folder'.")
+    print ('-'*70)
+elif check_path == True:
+    fichier = open(fullFileName_Allcode, "w")
+    fichier.write('Liste de tous les codes générés avec '+str(bits)+
+    ' bits, pour un Hamming weight de '+str(Nbr_weight)+', soit '+str(len(list_totalbits))+' codes au total.\n')
+    for item in list_totalbits :
+        fichier.write('\''+item+'\''+','+'\n')
+    fichier.close()
 
 
 #%%-------BLOC 2 : Test et remplacement des codes présentant des bits en commun
@@ -313,7 +348,7 @@ for trail in range(1,100) :
 root_folder = '/home/christophe/Documents/Informatique/Python/Scripts/Bits_code_generation_Resultats'
 
 # Génère un nom de fichier en fonction des paramètres 
-file_name = 'Best_Seq_Codes_'+str(bits)+'Bit_'+str(Nbr_weight)+'HWeiht_'+str(number_Loci)+'Cod_Esp'+str(distance_inter_bit)
+file_name = 'Best_Seq_Codes_'+str(bits)+'Bit_'+str(Nbr_weight)+'HWeiht_'+str(number_Loci)+'Cod_Esp'+str(distance_inter_bit)+'.csv'
 
 fullFileName=root_folder + os.sep + file_name
 
