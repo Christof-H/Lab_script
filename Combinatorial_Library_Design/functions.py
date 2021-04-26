@@ -109,3 +109,14 @@ def Completion(difference_pourcentage, Max_length, librairy, Max_diff_pourcent=1
         print('-'*70)
         print('No completion required')
         print('-'*70)
+        
+        
+###
+# Fonction concernant la lecture et la sauvegarde de fichiers .json 
+###
+# fonction permettant la sauvegarde des paramètres sous forme de fichier.json
+def SaveJson(fileName, dictionary) :
+    import json
+    with open(fileName, "w") as file :
+        file.write(json.dumps(dictionary, indent=4))
+        

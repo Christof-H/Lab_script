@@ -21,9 +21,9 @@ PrimerU = 'primer1' # choix du couple de primers universels 'primer1', 'primer2'
 
 ###--------CREATION DES CHEMINS D'ACCES POUR LES FICHIERS-----------
 #chemin d'accès pour le dossier Combinatorial_Library_Design
-rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/En cours/Combinatorial_Library_Design'
+rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Combinatorial_Library_Design'
 codeBook_LocusFile = 'Best_Seq_Codes_30Bit_2HWeiht_51Cod_Esp10.csv'
-codeBook_RegionFile = 'Best_Seq_Codes_15Bit_2HWeiht_10Cod_Esp4.csv'
+codeBook_RegionFile = 'Best_Seq_Codes_11Bit_2HWeiht_30Cod_Esp3.csv'
 chromosomeFile = chromosome + '.bed'
 barcodeFile = 'Barcodes.csv'
 primerUnivFile = 'Primer_univ.csv'
@@ -277,3 +277,26 @@ Region_SousRegion_N°,Code_Region,Bcd_Sous_Region,PU.Fw,PU.Rev\n')
 +','+str(locus.regionN)+'_'+str(locus.sousRegionN)+','+"'"+str(locus.codeSousRegion)\
 +','+locus.bcdRegion[0]+'/'+locus.bcdRegion[1]+','+locus.primers_Univ[0]+','\
 +locus.primers_Univ[2]+'\n')  
+
+# Sauvegarde des parametres ayant servis pour générer la bibliothèque sous 
+# forme d'un fichier.json
+from functions import SaveJson
+
+parameters = {}
+parameters['Chromosome']=chromosomeFile
+parameters['Resolution']=resolution
+parameters['StartLib']=startLib
+parameters['EndLib']=startLib+(resolution*nbrLociByRegion*nbrSousRegion)
+parameters['NbrProbeByLocus']=nbrProbeByLocus
+parameters['NbrRegion']=nbrRegion
+parameters['nbrSousRegion']=nbrSousRegion
+parameters['nbrLociByRegion']=nbrLociByRegion
+parameters['PrimerUniversel']=PrimerU
+parameters['codeBook_Locus']=codeBook_LocusFile
+parameters['codeBook_Region']=codeBook_RegionFile
+parameters['barcode']=barcodeFile
+parameters['primerUniv']=primerUnivFile
+
+parametersFilePath = rootFolder + os.sep + '4-OutputParameters.json'
+
+SaveJson(parametersFilePath,parameters)
