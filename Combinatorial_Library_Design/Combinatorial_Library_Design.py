@@ -9,18 +9,20 @@ import os, glob
 
 ###-------------------PARAMETRES DE LA LIBRAIRIE------------------------
 
-chromosome = 'chr3L' #'chr2L' or 'chr2R' or 'chr3L'.....
+chromosome = 'chrX' #'chr2L' or 'chr2R' or 'chr3L' or 'chrX'.....
 resolution = 40000 # Taille des loci en nucléotides
-startLib = 25000 # Coordonnée génomique du début du 1er locus
-nbrProbeByLocus = 90 # nombre de sondes primaires par locus
-nbrRegion = 2 # nombre de régions au total
+startLib = 1000000 # Coordonnée génomique du début du 1er locus
+nbrProbeByLocus = 200 # nombre de sondes primaires par locus
+nbrRegion = 10 # nombre de régions au total
 nbrSousRegion = 3
-nbrLociByRegion = 30 # nombre de loci par région
+nbrLociByRegion = 51 # nombre de loci par région ATTENTION on parle ici de 
+# région pas de sous-région
 nbrLoci = nbrLociByRegion*nbrRegion # nombre de loci au total (=nbre de loci par région x nbre de régions)
 PrimerU = 'primer1' # choix du couple de primers universels 'primer1', 'primer2' ou 'primer3'....
 
 ###--------CREATION DES CHEMINS D'ACCES POUR LES FICHIERS-----------
 #chemin d'accès pour le dossier Combinatorial_Library_Design
+folderChromosome = '/mnt/PALM_dataserv/DATA/Commun/genomes/dm6/OligoMiner/dm6_balanced'
 rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Combinatorial_Library_Design'
 codeBook_LocusFile = 'Best_Seq_Codes_30Bit_2HWeiht_51Cod_Esp10.csv'
 codeBook_RegionFile = 'Best_Seq_Codes_11Bit_2HWeiht_30Cod_Esp3.csv'
@@ -31,7 +33,7 @@ primerUnivFile = 'Primer_univ.csv'
 codeLocusPath = rootFolder + os.sep + codeBook_LocusFile
 codeSousRegionPath = rootFolder + os.sep + codeBook_RegionFile
 barcodePath = rootFolder + os.sep + barcodeFile
-primaryPath = rootFolder + os.sep + chromosomeFile
+primaryPath = folderChromosome + os.sep + chromosomeFile
 primerUnivPath = rootFolder + os.sep + primerUnivFile
 
 os.chdir(rootFolder)
@@ -84,6 +86,15 @@ primerUniv = dict()
 replace_primer = ['\n']
 split_primer = [',']
 FormatFile (primerUnivPath, primerUniv, 'primer',split_list=split_primer,replace_list=replace_primer)
+
+
+# Vérification du bon nombre de codes présents dans chaque Book, pour le nombre 
+# de loci et de sous-région demandées
+if nbrLociByRegion > len(codeBookLocus):
+    sys.exit(f"Erreur : Vous demandez à encoder {nbrLociByRegion} loci par région, et vous avez seulement {len(codeBookLocus)} codes dans le codeBook des loci")
+if nbrRegion * nbrSousRegion > len(codeBookLocus) :
+    sys.exit(f"Erreur : Vous demandez à encoder {nbrRegion * nbrSousRegion} sous-régions, et vous avez seulement {len(codeBook_SousRegion)} codes dans le codeBook sous-région")
+
 
 print('-'*70)
 print('listSeqGenomic =', listSeqGenomic[0])
@@ -188,11 +199,11 @@ for locus in total_locus :
 
 # Insertion de la sequence barcode pour la région selon le schéma suivant:
 # Bcd-region_(Bcdx_Bcdy_SeqADNgenomic_Bcdx_Bcdy)
-# ATTENTION : Il faut 2 Bcds pour identifier la région en marquage combinatoire,
+# ATTENTION : Il faut 2 Bcds pour identifier la région en marquage combinatoire avec Hamming weignt de 2,
 # La moitié des sondes primaires seront marquées pour l'un ou pour l'autre.
 bitsUseForBarcodeCombi = len(codeBookLocus[0])
 for locus in total_locus :
-    count = 0+bitsUseForBarcodeCombi #on utilisprint("exemple d'une séquence primaire :")e les Bcds qui ne sont pas pris pour le combinatoire des Loci
+    count = 0+bitsUseForBarcodeCombi #on utilise les Bcds qui ne sont pas pris pour le combinatoire des Loci
     tempSeq = []
     tempBcd = []
     for i in locus.codeSousRegion :
@@ -239,7 +250,7 @@ from functions import Completion
 # Cacul de la différence de taille entre les séquences des sondes primaires
 diff_pourcent, max_seq_length = Check_Length_Seq_Diff(total_locus)
 
-# Completion des séquences avec nucléotides aléatoires
+# Completion des séquences avec nucléotides a90léatoires
 # ATTENTION: complétion en 3' de la séquence !!!!!
 Completion(diff_pourcent,max_seq_length,total_locus)
 print('-'*70)
@@ -283,19 +294,19 @@ Region_SousRegion_N°,Code_Region,Bcd_Sous_Region,PU.Fw,PU.Rev\n')
 from functions import SaveJson
 
 parameters = {}
-parameters['Chromosome']=chromosomeFile
-parameters['Resolution']=resolution
-parameters['StartLib']=startLib
-parameters['EndLib']=startLib+(resolution*nbrLociByRegion*nbrSousRegion)
-parameters['NbrProbeByLocus']=nbrProbeByLocus
-parameters['NbrRegion']=nbrRegion
+parameters['chromosomeFile']=chromosomeFile
+parameters['resolution']=resolution
+parameters['startLib']=startLib
+parameters['endLib']=startLib+(resolution*nbrLociByRegion*nbrRegion)
+parameters['nbrProbeByLocus']=nbrProbeByLocus
+parameters['nbrRegion']=nbrRegion
 parameters['nbrSousRegion']=nbrSousRegion
 parameters['nbrLociByRegion']=nbrLociByRegion
-parameters['PrimerUniversel']=PrimerU
-parameters['codeBook_Locus']=codeBook_LocusFile
-parameters['codeBook_Region']=codeBook_RegionFile
-parameters['barcode']=barcodeFile
-parameters['primerUniv']=primerUnivFile
+parameters['PrimerU']=PrimerU
+parameters['codeBook_LocusFile']=codeBook_LocusFile
+parameters['codeBook_RegionFile']=codeBook_RegionFile
+parameters['barcodeFile']=barcodeFile
+parameters['primerUnivFile']=primerUnivFile
 
 parametersFilePath = rootFolder + os.sep + '4-OutputParameters.json'
 
