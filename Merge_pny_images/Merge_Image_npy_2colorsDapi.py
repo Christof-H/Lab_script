@@ -19,7 +19,7 @@ import os
 import glob
 import matplotlib.pylab as plt
 import numpy as np 
-import cv2
+#import cv2
 import matplotlib.gridspec as gridspec
 #from imageProcessing.imageProcessing import Image, imageAdjust
 #import imageProcessing.makeProjections

@@ -11,19 +11,19 @@ import os, glob
 
 chromosome = 'chrX' #'chr2L' or 'chr2R' or 'chr3L' or 'chrX'.....
 resolution = 40000 # Taille des loci en nucléotides
-startLib = 1000000 # Coordonnée génomique du début du 1er locus
-nbrProbeByLocus = 200 # nombre de sondes primaires par locus
-nbrRegion = 10 # nombre de régions au total
+startLib = 9000000 # Coordonnée génomique du début du 1er locus
+nbrProbeByLocus = 400 # nombre de sondes primaires par locus
+nbrRegion = 1 # nombre de régions au total
 nbrSousRegion = 3
 nbrLociByRegion = 51 # nombre de loci par région ATTENTION on parle ici de 
 # région pas de sous-région
 nbrLoci = nbrLociByRegion*nbrRegion # nombre de loci au total (=nbre de loci par région x nbre de régions)
-PrimerU = 'primer1' # choix du couple de primers universels 'primer1', 'primer2' ou 'primer3'....
+PrimerU = 'primer2' # choix du couple de primers universels 'primer1', 'primer2' ou 'primer3'....
 
 ###--------CREATION DES CHEMINS D'ACCES POUR LES FICHIERS-----------
 #chemin d'accès pour le dossier Combinatorial_Library_Design
 folderChromosome = '/mnt/PALM_dataserv/DATA/Commun/genomes/dm6/OligoMiner/dm6_balanced'
-rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Combinatorial_Library_Design'
+rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Library_design'
 codeBook_LocusFile = 'Best_Seq_Codes_30Bit_2HWeiht_51Cod_Esp10.csv'
 codeBook_RegionFile = 'Best_Seq_Codes_11Bit_2HWeiht_30Cod_Esp3.csv'
 chromosomeFile = chromosome + '.bed'
@@ -37,6 +37,17 @@ primaryPath = folderChromosome + os.sep + chromosomeFile
 primerUnivPath = rootFolder + os.sep + primerUnivFile
 
 os.chdir(rootFolder)
+
+###-------------------CREATION DU DOSSIER RESULTAT----------------------
+resultFolder = os.path.expanduser('~/Python_Results')
+Lib_Design_Folder = 'Library_Design_Combi'
+pathResultFolder= resultFolder+ os.sep + Lib_Design_Folder
+if not os.path.exists(resultFolder):
+    os.mkdir(resultFolder)
+if not os.path.exists(pathResultFolder):    
+    os.mkdir(pathResultFolder)
+
+
 
 ###-----------VERIFICATION DE LA PRESENCE DE TOUS LES FICHIERS----------
 
@@ -260,7 +271,7 @@ print(total_locus[0].seqProbe[:3])
 #%%----------ECRITURE DES DIFFERENTS FICHIERS RESULTATS---------------------            
 
 #fichier détaillé avec information et séquences : Library_details
-resultDetails = rootFolder+os.sep+'1_Library_details'
+resultDetails = pathResultFolder+os.sep+'1_Library_details'
 with open (resultDetails, 'w') as file :
     for locus in total_locus :
         file.write('Chromosome:'+str(locus.chrName)+' Locus_N°'+str(locus.locusN)\
@@ -271,29 +282,30 @@ with open (resultDetails, 'w') as file :
             file.write(seq+'\n')
             
 #fichier avec toutes les séquences (sans espace) uniquement : Full_sequence_Only
-fullSequence = rootFolder+os.sep+'2_Full_sequence_Only'
+fullSequence = pathResultFolder+os.sep+'2_Full_sequence_Only'
 with open (fullSequence, 'w') as file :
     for locus in total_locus :
         for seq in locus.seqProbe :
             file.write(seq.replace(' ','')+'\n')
             
 #fichier avec résumé des informations (sans séquence) : Library_Summary
-Summary = rootFolder+os.sep+'3_Library_Summary.csv'
+Summary = pathResultFolder+os.sep+'3_Library_Summary.csv'
 with open (Summary, 'w') as file :
-    file.write('Chromosome,Locus_N°,Start,End,Code_locus,Bcd_locus,\
-Region_SousRegion_N°,Code_Region,Bcd_Sous_Region,PU.Fw,PU.Rev\n')
+    file.write('Chr,Locus,Start,End,Code_locus,Bcd_locus,\
+Region ssRegion,Code_Region,Bcd_Sous_Region,PU.Fw,PU.Rev,Nbr_probes\n')
     for locus in total_locus :
         file.write(str(locus.chrName)+','+str(locus.locusN)+','+str(locus.startSeq)\
 +','+str(locus.endSeq)+','+"'"+str(locus.codeLocus)+','+locus.bcdLocus[0]+'/'+locus.bcdLocus[1]\
 +','+str(locus.regionN)+'_'+str(locus.sousRegionN)+','+"'"+str(locus.codeSousRegion)\
 +','+locus.bcdRegion[0]+'/'+locus.bcdRegion[1]+','+locus.primers_Univ[0]+','\
-+locus.primers_Univ[2]+'\n')  
++locus.primers_Univ[2]+','+str(len(locus.seqProbe))+'\n')  
 
 # Sauvegarde des parametres ayant servis pour générer la bibliothèque sous 
 # forme d'un fichier.json
 from functions import SaveJson
 
 parameters = {}
+parameters['Script_Name']='Combinatorial_Library_Design.py'
 parameters['chromosomeFile']=chromosomeFile
 parameters['resolution']=resolution
 parameters['startLib']=startLib
@@ -308,6 +320,9 @@ parameters['codeBook_RegionFile']=codeBook_RegionFile
 parameters['barcodeFile']=barcodeFile
 parameters['primerUnivFile']=primerUnivFile
 
-parametersFilePath = rootFolder + os.sep + '4-OutputParameters.json'
+parametersFilePath = pathResultFolder + os.sep + '4-OutputParameters.json'
 
 SaveJson(parametersFilePath,parameters)
+
+print('-'*70)
+print(f"Les fichiers résultats ont été saucegardé dans le dossier {resultFolder}")

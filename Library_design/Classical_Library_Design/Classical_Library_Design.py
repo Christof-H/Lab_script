@@ -4,23 +4,28 @@
 Created on Fri Apr 16 16:07:15 2021
 
 @author: christophe
+
+Ce Script permet de choisir une/des régions et de faire les sondes primaires
+avec 1 bcd différent par région différente (avec le choix possible de bcd par 
+sonde primaire de 2 à 5 pour le même bcd)
+
 """
 import os, glob
 
 ###-------------------PARAMETRES DE LA LIBRAIRIE------------------------
 
-chromosome = 'chrX' #'chr2L' or 'chr2R' or 'chr3L' or 'chrX'.....
-resolution = 40000 # Taille des loci en nucléotides
-startLib = 9000000 # Coordonnée génomique du début du 1er locus
-nbrProbeByLocus = 200 # nombre de sondes primaires par locus
-nbrLociTotal = 20 # nombre de loci au total
-PrimerU = 'primer1' # choix du couple de primers universels 'primer1', 'primer2' ou 'primer3'....
-nbrBcd_ByProbe = 2 # Nbre de même barcode par sonde primaire
+chromosome = 'chr2' #'chr2L' or 'chr2R' or 'chr3L' or 'chrX' or 'ChrY'.....
+resolution = 25000 # Taille des loci en nucléotides
+startLib = 169000000 # Coordonnée génomique du début du 1er locus
+nbrProbeByLocus = 150 # nombre de sondes primaires par locus
+nbrLociTotal = 100 # nombre de loci au total
+PrimerU = 'primer7' # choix du couple de primers universels 'primer1', 'primer2' ou 'primer3'....
+nbrBcd_ByProbe = 3 # Nbre de même barcode par sonde primaire
 
 ###--------CREATION DES CHEMINS D'ACCES POUR LES FICHIERS-----------
 #chemin d'accès pour le dossier Combinatorial_Library_Design
-folderChromosome = '/mnt/PALM_dataserv/DATA/Commun/genomes/dm6/OligoMiner/dm6_balanced'
-rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/En cours/Classical_Library_Design'
+folderChromosome = '/mnt/PALM_dataserv/DATA/Commun/genomes/Mouse/OligoMiner/Mouse_balanced_mm10'
+rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Library_design'
 chromosomeFile = chromosome + '.bed'
 barcodeFile = 'Barcodes.csv'
 primerUnivFile = 'Primer_univ.csv'
@@ -30,6 +35,15 @@ primaryPath = folderChromosome + os.sep + chromosomeFile
 primerUnivPath = rootFolder + os.sep + primerUnivFile
 
 os.chdir(rootFolder)
+
+###-------------------CREATION DU DOSSIER RESULTAT----------------------
+resultFolder = os.path.expanduser('~/Python_Results')
+Lib_Design_Folder = 'Library_Design_Diff'
+pathResultFolder= resultFolder+ os.sep + Lib_Design_Folder
+if not os.path.exists(resultFolder):
+    os.mkdir(resultFolder)
+if not os.path.exists(pathResultFolder):    
+    os.mkdir(pathResultFolder)
 
 ###-----------VERIFICATION DE LA PRESENCE DE TOUS LES FICHIERS----------
 
@@ -93,9 +107,11 @@ for locus in total_locus :
                 temp.append([seq[0],seq[2]])                    
             else :
                 pass
-    random.shuffle(temp)
-    temp = temp[:nbrProbeByLocus]
-    temp.sort()
+    
+    if len(temp) > nbrProbeByLocus:
+        random.shuffle(temp)
+        temp = temp[:nbrProbeByLocus]
+        temp.sort()
     locus.seqProbe = [x[1] for x in temp]
 
 # Affichage pour exemple d'un locus :
@@ -119,6 +135,16 @@ for locus in total_locus :
     elif nbrBcd_ByProbe == 3 :
         for item in locus.seqProbe :
             seqWithBcd.append(barcodes[count][1]+' '+ item +' '+barcodes[count][1]*2)
+        count +=1
+        locus.seqProbe = seqWithBcd
+    elif nbrBcd_ByProbe == 4 :
+        for item in locus.seqProbe :
+            seqWithBcd.append(barcodes[count][1]*2+' '+ item +' '+barcodes[count][1]*2)
+        count +=1
+        locus.seqProbe = seqWithBcd
+    elif nbrBcd_ByProbe == 5 :
+        for item in locus.seqProbe :
+            seqWithBcd.append(barcodes[count][1]*3+' '+ item +' '+barcodes[count][1]*2)
         count +=1
         locus.seqProbe = seqWithBcd
     
@@ -158,7 +184,7 @@ print(total_locus[0].seqProbe[:3])
 #%%----------ECRITURE DES DIFFERENTS FICHIERS RESULTATS---------------------            
 
 #fichier détaillé avec information et séquences : Library_details
-resultDetails = rootFolder+os.sep+'1_Library_details'
+resultDetails = pathResultFolder+os.sep+'1_Library_details.txt'
 with open (resultDetails, 'w') as file :
     for locus in total_locus :
         file.write('Chromosome:'+str(locus.chrName)+' Locus_N°'+str(locus.locusN)\
@@ -167,14 +193,14 @@ with open (resultDetails, 'w') as file :
             file.write(seq+'\n')
             
 #fichier avec toutes les séquences (sans espace) uniquement : Full_sequence_Only
-fullSequence = rootFolder+os.sep+'2_Full_sequence_Only'
+fullSequence = pathResultFolder+os.sep+'2_Full_sequence_Only.txt'
 with open (fullSequence, 'w') as file :
     for locus in total_locus :
         for seq in locus.seqProbe :
             file.write(seq.replace(' ','')+'\n')
             
 #fichier avec résumé des informations (sans séquence) : Library_Summary
-Summary = rootFolder+os.sep+'3_Library_Summary.csv'
+Summary = pathResultFolder+os.sep+'3_Library_Summary.csv'
 with open (Summary, 'w') as file :
     file.write('Chromosome,Locus_N°,Start,End,Barcode,PU.Fw,PU.Rev,Nbr_Probes\n')
     for locus in total_locus :
@@ -187,6 +213,7 @@ with open (Summary, 'w') as file :
 from functions import SaveJson
 
 parameters = {}
+parameters['Script_Name']='Classical_Library_Design.py'
 parameters['chromosomeFile']=chromosomeFile
 parameters['resolution']=resolution
 parameters['startLib']=startLib
@@ -198,8 +225,9 @@ parameters['PrimerU']=PrimerU
 parameters['barcodeFile']=barcodeFile
 parameters['primerUnivFile']=primerUnivFile
 
-parametersFilePath = rootFolder + os.sep + '4-OutputParameters.json'
+parametersFilePath = pathResultFolder + os.sep + '4-OutputParameters.json'
 
 SaveJson(parametersFilePath,parameters)
+
 
 

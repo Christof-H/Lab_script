@@ -62,12 +62,13 @@ Volumes:
 
 import os
 
+#Folder contenant le fichier à vérifier
+rootFolder = '/home/christophe/Téléchargements'
+#Folder ou se trouve ce sript, avec avec les fichiers barcode, primer_F, primer_R.....
+rootFolderScript = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Library_Check'
 
-rootFolder = '/home/christophe/Téléchargements/Olivier'
-rootFolderScript = '/home/christophe/Documents/Informatique/Python/Scripts/En cours/Library_check'
 
-
-libraryFile = 'Library_merged_Brain_Pancreas.txt'
+libraryFile = 'Merged_library_September_2021.txt'
 barcodeFile = 'seq_brcd_on_primary.csv'
 pu_fwFile = 'seq_primer_univ_fw.csv'
 pu_RevFile = 'seq_primer_univ_rev.csv'
@@ -264,7 +265,6 @@ libraries_F_R_B = {}
 Sorting(libraries_F_R, dict_MER, libraries_F_R_B)
 for i, (k,v) in enumerate(libraries_F_R_B.items(),1) :
     print(i, k, ':', len(v), 'sondes primaires')
-
 #%% Trie et affiche les barcodes/MER pour chaque librairie
 details_lib = {}
 for k in libraries_F_R_B.keys() :
@@ -280,13 +280,28 @@ print(details_lib)
 
 
 #%% Résumé de l'analyse des librairies dans un fichier csv
+# Création d'un dictionnaire regroupant toutes les infos
+summary = dict()
+for k,v in libraries_F_R.items() :
+    summary[k] = [['Nbr_probes_library',len(v)]]
+for k,v in details_lib.items() :
+    summary[k].extend([v,['Nbr_Bcd/MER', len(v)]])
+
+
 summaryFile = '1_Library_Summary.csv'
 SummaryFilePath = rootFolder + os.sep + summaryFile
 with open(SummaryFilePath, 'w') as file :
+    file.write('Summary :'+'\n')
+    file.write('N°'+','+'PU.fw'+','+'PU.rev'+','+'Nbr_Barcode/MER'+','+'Total nbr probes'+','+'Barcode/MER'+'\n')
+    for i, (key,value) in enumerate(summary.items(),1) :
+        list_key = key.split(':')
+        file.write(str(i)+','+list_key[0]+','+list_key[1]+','+str(value[2][1])+','+str(value[0][1])+','+" ".join(value[1])+'\n')
+    file.write('\n'*3)
+    file.write('Details'+'\n')
     file.write('N°'+','+'PU.fw'+','+'PU.rev'+','+'Barcode/MER'+','+'Nbr probes'+'\n')
     for i, (key,value) in enumerate(libraries_F_R_B.items(),1) :
         list_key = key.split(':')
-        file.write(str(i)+','+list_key[0]+','+list_key[1]+','+list_key[2]+','+str(len(value))+'sondes primaires'+'\n')
+        file.write(str(i)+','+list_key[0]+','+list_key[1]+','+list_key[2]+','+str(len(value))+' sondes primaires'+'\n')
 
 
 #%% recupère la première et dernière sequence des sondes primaires de chaque 

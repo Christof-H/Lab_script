@@ -62,12 +62,13 @@ Volumes:
 
 import os
 
+#Folder ou se trouve la bibliothèque à tester :
+rootFolder = '/home/christophe/Documents/Projets/Multiplexed/Librairies/Juin_2021_Librairie_test_et_combinatoire'
+#Folder ou se trouve tous les fichiers pour l'utilisation du script :
+rootFolderScript = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Library_Check'
 
-rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/Script_saved_in_use/Library_Check/File_For_Tests'
-rootFolderScript = '/home/christophe/Documents/Informatique/Python/Scripts/Script_saved_in_use/Library_Check'
 
-
-libraryFile = 'Lib_Test.txt'
+libraryFile = '2_Full_sequence_Only_Final'
 barcodeFile = 'seq_brcd_on_primary.csv'
 pu_fwFile = 'seq_primer_univ_fw.csv'
 pu_RevFile = 'seq_primer_univ_rev.csv'
@@ -80,6 +81,16 @@ primer_rPath = rootFolderScript + os.sep + pu_RevFile
 barcode_filePath = rootFolderScript + os.sep + barcodeFile
 mer_filePath = rootFolderScript + os.sep + merFile
 
+###-------------------CREATION DU DOSSIER RESULTAT----------------------
+resultFolder = os.path.expanduser('~/Python_Results')
+Lib_Check_Folder = 'Library_Check'
+pathResultFolder= resultFolder+ os.sep + Lib_Check_Folder
+if not os.path.exists(resultFolder):
+    os.mkdir(resultFolder)
+if not os.path.exists(pathResultFolder):    
+    os.mkdir(pathResultFolder)
+
+
 #%% Calcul de la longueur des sondes primaires (ne doit pas excéder 10% entre
 # la plus petite et la plus grande sonde primaire)
 
@@ -87,7 +98,6 @@ seq_probes_Raw = []
 with open(libraryFilePath, 'r', encoding='utf-8') as probes_file:
     for line in probes_file :
         seq_probes_Raw.append((line.upper().replace('\n', '')))
-    print(seq_probes_Raw[0:5])
     
 
 # Elimination des espaces si présents dans les sondes primaires
@@ -276,13 +286,15 @@ for i, (k,v) in enumerate(libraries_F_R_RT.items(),1) :
     
 #%% Résumé de l'analyse des librairies dans un fichier csv
 summaryFile = '1_Library_Summary.csv'
-SummaryFilePath = rootFolder + os.sep + summaryFile
+SummaryFilePath = pathResultFolder + os.sep + summaryFile
 with open(SummaryFilePath, 'w') as file :
     file.write('N°'+','+'PU.fw'+','+'PU.rev'+','+'Barcode/MER'+','+'Nbr probes'+'\n')
     for i, (key,value) in enumerate(libraries_F_R_RT.items(),1) :
         list_key = [x for x in key]
-        file.write(str(i)+','+list_key[0]+','+list_key[1]+','+' - '.join(list_key[2:])+','+str(len(value))+'sondes primaires'+'\n')
+        file.write(str(i)+','+list_key[0]+','+list_key[1]+','+' - '.join(list_key[2:])+','+str(len(value))+'\n')
 
+print('-'*70)
+print(f"Les fichiers résultats ont été saucegardé dans le dossier {resultFolder}")
 
 #%% recupère la première et dernière sequence des sondes primaires de chaque 
 # locus pour les mettre dans un dictionnaire (first_last_seq_probe)
