@@ -45,7 +45,8 @@ with open(list_exon_file, mode='r') as file:
             elif previous_pos[0] != next_pos[0] and int(line.split('\t')[1]) >= size:
                 previous_pos = next_pos.copy()
 
-
+# Search for epigenetic domains in identified gene-poor regions :
+    
 physical_domain_file = "Physical_domain_droso_DM6.csv"
 folder = "/home/christophe/Documents/Projets/Droso_genetic/Data_from_Sexton"
 physical_domain_path = folder + os.sep + physical_domain_file 
@@ -82,7 +83,66 @@ for item in poor_gene_coord:
                 else:
                     item['Domain'][domain[3]] = item['Domain'][domain[3]] + (item_end - domain[1])
 
-            
+# Search for Cis-regulatory elements in identified gene-poor regions
+# CMRs: Cis regulatory modules
+# CMRs segment (CMRS_seg): large CMR DNA region not really defined
+# pCMRs: predicted CMRs
+# RCs: Reporter construct
+# TFBSs: Transcription factor binding sites
+
+for item in poor_gene_coord:
+    item['CMR']={'CMRs':[], 'CMR_seg':[], 'pCMRs':[], 'RCs':[], 'TFBSs':[]}
+
+cmr_folder = "/home/christophe/Documents/Projets/Droso_genetic/RedFly_data"
+cmrs_file = "all_drosophila_melanogaster_crms.bed"
+cmrsSeg_file = "all_drosophila_melanogaster_crm_segments.bed"
+pCMRs_file = "all_drosophila_melanogaster_predicted_crms.bed"
+rcs_file = "all_drosophila_melanogaster_rcs.bed"
+tfbss_file = "all_drosophila_melanogaster_tfbss.bed"
+
+cmrs_path = cmr_folder + os.sep + cmrs_file
+cmrsSeg_path = cmr_folder + os.sep + cmrsSeg_file
+pCMRs_path = cmr_folder + os.sep + pCMRs_file
+rcs_path = cmr_folder + os.sep + rcs_file
+tfbss_path =cmr_folder + os.sep + tfbss_file
+
+cmrs_list = []
+cmrsSeg_list = []
+pCMRs_list = []
+rcs_list = []
+tfbss_list = [] 
+
+def create_CMR_list(doc_path, cmr_list):
+    with open(doc_path, mode='r') as file:
+        for line in file:
+            temp = list(line.replace("\n","").split('\t'))
+            temp[1] = int(temp[1])
+            temp[2] = int(temp[2])
+            cmr_list.append(temp)
+
+def search_CMR(cmr_list, cmr_name, dic):
+    for region in dic:
+        temp=[]
+        for item in cmr_list:
+            if item[0] == region['Region']['Chr'] \
+                and (region['Region']['Start']<item[1]<region['Region']['End'] \
+                     or region['Region']['Start']<item[2]<region['Region']['End']):
+                temp.append(item[3])
+        region['CMR'][cmr_name]= temp
+
+
+create_CMR_list(cmrs_path, cmrs_list)
+create_CMR_list(cmrsSeg_path, cmrsSeg_list)
+create_CMR_list(pCMRs_path, pCMRs_list)
+create_CMR_list(rcs_path, rcs_list)
+create_CMR_list(tfbss_path, tfbss_list)
+
+
+search_CMR(cmrs_list, "CMRs", poor_gene_coord)
+search_CMR(cmrsSeg_list, "CMR_seg", poor_gene_coord)
+search_CMR(pCMRs_list, "pCMRs", poor_gene_coord)
+search_CMR(rcs_list, "RCs", poor_gene_coord)
+search_CMR(tfbss_list, "TFBSs", poor_gene_coord)
             
 #%% Mise en forme de fichier .csv            
 
@@ -95,9 +155,39 @@ if not os.path.isdir(finalFolder):
     os.mkdir(finalFolder)
 
 with open(pathFile, mode='w') as file:
-    entete = "Chr.,Region length,Start,End,Gene before region, Gene after region, "
+    entete = "Chr.,Region length,Start,End,Gene before region, \
+        Gene after region, Epigenetic class, CRMs, CRM segment, \
+            RCs, Predited CRM, TFBSs"
     file.write(entete + '\n')
     for region in poor_gene_coord:
-        file.write(','.join(str(n) for n in region) + '\n')
+        chrom = region['Region']['Chr']
+        length = str(region['Region']['length'])
+        start = str(region['Region']['Start'])
+        end = str(region['Region']['End'])
+        previous = region['Region']['previousGene']
+        following = region['Region']['NextGene']
+        nbCMRs = str(len(region['CMR']['CMRs']))
+        nbCMR_seg = str(len(region['CMR']['CMR_seg']))
+        nbpCMRs = str(len(region['CMR']['pCMRs']))
+        nbRCs = str(len(region['CMR']['RCs']))
+        nbTFBSs = str(len(region['CMR']['TFBSs']))
         
+        
+        list_marks =[]
+        for key, value in region['Domain'].items():
+            if value != 0:
+                list_marks.append(key)
+        domain = '/'.join(list_marks)
+        file.write(chrom +','+ length +','+ start +','+ end +','+ previous \
+                   +','+ following +','+ domain +','+ nbCMRs +','+ nbCMR_seg \
+                   +','+ nbRCs +','+ nbpCMRs +','+ nbTFBSs + '\n')
+        
+
+
+
+
+
+
+
+
         
