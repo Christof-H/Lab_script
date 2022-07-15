@@ -45,8 +45,9 @@ with open(list_exon_file, mode='r') as file:
             elif previous_pos[0] != next_pos[0] and int(line.split('\t')[1]) >= size:
                 previous_pos = next_pos.copy()
 
-# Search for epigenetic domains in identified gene-poor regions :
-    
+
+# Import Physical Domain form Sexton paper
+
 physical_domain_file = "Physical_domain_droso_DM6.csv"
 folder = "/home/christophe/Documents/Projets/Droso_genetic/Data_from_Sexton"
 physical_domain_path = folder + os.sep + physical_domain_file 
@@ -67,21 +68,24 @@ for item in domainType:
 for item in poor_gene_coord:
     item["Domain"]=domain.copy()
     
-for item in poor_gene_coord:
+for region in poor_gene_coord:
     for domain in physical_domain_list:
-        if item['Region']['Chr'] == domain[0] :
-            item_start = item['Region']['Start']
-            item_end = item['Region']['End']
-            if domain[1] <= item_start and item_start <= domain[2]:
-                if domain[2] >= item_end:
-                    item['Domain'][domain[3]] = item['Region']['length']
+        if region['Region']['Chr'] == domain[0] :
+            region_start = region['Region']['Start']
+            region_end = region['Region']['Start']
+            if domain[1] <= region_start and region_start <= domain[2]:
+                if domain[2] >= region_end:
+                    region['Domain'][domain[3]] = region['Region']['length']
                 else:
-                    item['Domain'][domain[3]] = item['Domain'][domain[3]] + (domain[2] - item_start)
-            elif item_start < domain[1] and domain[1] < item_end:
-                if domain[2] <= item_end:
-                    item['Domain'][domain[3]] = item['Domain'][domain[3]] + (domain[2] - domain[1])
+                    region['Domain'][domain[3]] = region['Domain'][domain[3]] + (domain[2] - region_start)
+            elif region_start < domain[1] and domain[1] < region_end:
+                if domain[2] <= region_end:
+                    region['Domain'][domain[3]] = region['Domain'][domain[3]] + (domain[2] - domain[1])
                 else:
-                    item['Domain'][domain[3]] = item['Domain'][domain[3]] + (item_end - domain[1])
+                    region['Domain'][domain[3]] = region['Domain'][domain[3]] + (region_end - domain[1])
+
+
+# Import enhancer from RedFly site
 
 # Search for Cis-regulatory elements in identified gene-poor regions
 # CMRs: Cis regulatory modules
@@ -143,6 +147,39 @@ search_CMR(cmrsSeg_list, "CMR_seg", poor_gene_coord)
 search_CMR(pCMRs_list, "pCMRs", poor_gene_coord)
 search_CMR(rcs_list, "RCs", poor_gene_coord)
 search_CMR(tfbss_list, "TFBSs", poor_gene_coord)
+
+
+# Import MiMIC strain coordinate
+
+mimicFolder = "/home/christophe/Documents/Projets/Droso_genetic/MiMIC_line_from_Flybase"
+mimicfile = "FlyBase_Fields_download.txt"
+mimicpath = mimicFolder + os.sep + mimicfile
+mimic_list = []
+
+with open(mimicpath, mode='r') as file:
+    lines = file.readlines()[1:] #remove header of text file
+    for line in lines:
+        temp=[]
+        temp = line.replace('\n', '').split('\t')
+        coord = temp[6].replace(':', ' ').replace('..', ' ').split(' ')
+        if temp[6] != '-':      #remove MiMIC strain without coordinate
+            mimicStrain=[]
+            coord[1] = int(coord[1])
+            coord[2] = int(coord[2])
+            mimicStrain.extend(coord)
+            mimicStrain.extend([temp[0], temp[4], temp[9], temp[10]])
+            mimic_list.append(mimicStrain)
+
+# Check for MiMIC lines in the different gene-poor regions selected
+for locus in poor_gene_coord:
+    mimic_line=[]
+    for mimic in mimic_list:
+        if locus['Region']['Chr'] == 'chr'+mimic[0]:
+            if locus['Region']['Start'] <= mimic[1] and mimic[2] <= locus['Region']['End']:
+                mimic_line.append(mimic)
+    locus['MiMIC'] = mimic_line
+
+                       
             
 #%% Mise en forme de fichier .csv            
 
@@ -157,7 +194,7 @@ if not os.path.isdir(finalFolder):
 with open(pathFile, mode='w') as file:
     entete = "Chr.,Region length,Start,End,Gene before region, \
         Gene after region, Epigenetic class, CRMs, CRM segment, \
-            RCs, Predited CRM, TFBSs"
+            RCs, Predited CRM, TFBSs, Nber MiMIC, MiMIC Line ID"
     file.write(entete + '\n')
     for region in poor_gene_coord:
         chrom = region['Region']['Chr']
@@ -171,6 +208,10 @@ with open(pathFile, mode='w') as file:
         nbpCMRs = str(len(region['CMR']['pCMRs']))
         nbRCs = str(len(region['CMR']['RCs']))
         nbTFBSs = str(len(region['CMR']['TFBSs']))
+        nbMimic =str(len(region['MiMIC']))
+        lineID =[]
+        for mimicline in region['MiMIC']:
+            lineID.append(mimicline[-1])
         
         
         list_marks =[]
@@ -180,14 +221,15 @@ with open(pathFile, mode='w') as file:
         domain = '/'.join(list_marks)
         file.write(chrom +','+ length +','+ start +','+ end +','+ previous \
                    +','+ following +','+ domain +','+ nbCMRs +','+ nbCMR_seg \
-                   +','+ nbRCs +','+ nbpCMRs +','+ nbTFBSs + '\n')
+                   +','+ nbRCs +','+ nbpCMRs +','+ nbTFBSs +','+ nbMimic \
+                    +','+' - '.join(lineID) + '\n')
         
-
-
-
-
-
-
-
-
+        
+        
+        
+        
+        
+        
+        
+        
         
