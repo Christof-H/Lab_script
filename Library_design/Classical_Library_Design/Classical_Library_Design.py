@@ -6,31 +6,31 @@ Created on Fri Apr 16 16:07:15 2021
 @author: christophe
 
 Ce Script permet de choisir une/des régions et de faire les sondes primaires
-avec 1 bcd différent par région différente (avec le choix possible de bcd par 
-sonde primaire de 2 à 5 pour le même bcd)
+avec 1 bcd/RT différent par région différente (avec le choix possible de bcd/RT par 
+sonde primaire de 2 à 5 pour le même bcd/RT)
 
 """
 import os, glob
 
 ###-------------------PARAMETRES DE LA LIBRAIRIE------------------------
 
-chromosome = 'chr2' #'chr2L' or 'chr2R' or 'chr3L' or 'chrX' or 'ChrY'.....
-resolution = 25000 # Taille des loci en nucléotides
-startLib = 169000000 # Coordonnée génomique du début du 1er locus
-nbrProbeByLocus = 150 # nombre de sondes primaires par locus
-nbrLociTotal = 100 # nombre de loci au total
-PrimerU = 'primer7' # choix du couple de primers universels 'primer1', 'primer2' ou 'primer3'....
-nbrBcd_ByProbe = 3 # Nbre de même barcode par sonde primaire
+chromosome = 'chr2L_original' #'chr2L' or 'chr2R' or 'chr3L' or 'chrX' or 'ChrY'.....
+resolution = 3000 # Taille des loci en nucléotides
+startLib = 16411158 # Coordonnée génomique du début du 1er locus
+nbrProbeByLocus = 45 # nombre de sondes primaires par locus
+nbrLociTotal = 22 # nombre de loci au total
+PrimerU = 'primer1' # choix du couple de primers universels 'primer1', 'primer2' ou 'primer3'....
+nbrBcd_RT_ByProbe = 3 # Nbre de même barcode par sonde primaire max=5
 
 ###--------CREATION DES CHEMINS D'ACCES POUR LES FICHIERS-----------
 #chemin d'accès pour le dossier Combinatorial_Library_Design
-folderChromosome = '/mnt/PALM_dataserv/DATA/Commun/genomes/Mouse/OligoMiner/Mouse_balanced_mm10'
-rootFolder = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Library_design'
+folderChromosome = '/mnt/PALM_dataserv/DATA/Commun/genomes/dm3/OligoMiner/dm3_32nt'
+rootFolder = '/home/christophe/Documents/Repositories/Lab_script/Library_design'
 chromosomeFile = chromosome + '.bed'
-barcodeFile = 'Barcodes.csv'
+bcd_RT_File = 'List_RT.csv' # Choix entre 'Barcodes.csv' ou 'List_RT.csv'
 primerUnivFile = 'Primer_univ.csv'
 
-barcodePath = rootFolder + os.sep + barcodeFile
+bcd_RT_Path = rootFolder + os.sep + bcd_RT_File
 primaryPath = folderChromosome + os.sep + chromosomeFile
 primerUnivPath = rootFolder + os.sep + primerUnivFile
 
@@ -55,10 +55,10 @@ from functions import FormatFile
 import sys
 
 # Ouverture et formatage des barcodes dans la variable barcodes :
-replace_barcode =['\n']
-split_barcode = [',']
-barcodes= list()
-FormatFile (barcodePath, barcodes, 'barcode',split_list=split_barcode, replace_list=replace_barcode)
+replace_bcd_RT =['\n']
+split_bcd_RT = [',']
+bcd_RT= list()
+FormatFile (bcd_RT_Path, bcd_RT, 'bcd_RT',split_list=split_bcd_RT, replace_list=replace_bcd_RT)
 
 # Ouverture et formatage des coordonnées et des séquences des sondes primaires 
 # dans la variable listSeqGenomic :
@@ -76,7 +76,7 @@ FormatFile (primerUnivPath, primerUniv, 'primer',split_list=split_primer,replace
 print('-'*70)
 print('listSeqGenomic =', listSeqGenomic[0])
 print('-'*70)
-print('barcodes =', barcodes[:2])
+print('barcodes =', bcd_RT[:2])
 print('-'*70)
 print('primerUniv = ', 'primer1 =', primerUniv['primer1'])
 
@@ -125,26 +125,26 @@ import copy
 # Bcdx_SeqADNgenomic_Bcdx_ ou Bcdx_SeqADNgenomic_Bcdx_Bcdx
 count = 0
 for locus in total_locus :
-    locus.bcdLocus = barcodes[count][0]
+    locus.bcdLocus = bcd_RT[count][0]
     seqWithBcd = []
-    if nbrBcd_ByProbe == 2 :
+    if nbrBcd_RT_ByProbe == 2 :
         for item in locus.seqProbe :
-            seqWithBcd.append(barcodes[count][1]+' '+ item +' '+barcodes[count][1])
+            seqWithBcd.append(bcd_RT[count][1]+' '+ item +' '+bcd_RT[count][1])
         count +=1
         locus.seqProbe = seqWithBcd
-    elif nbrBcd_ByProbe == 3 :
+    elif nbrBcd_RT_ByProbe == 3 :
         for item in locus.seqProbe :
-            seqWithBcd.append(barcodes[count][1]+' '+ item +' '+barcodes[count][1]*2)
+            seqWithBcd.append(bcd_RT[count][1]+' '+ item +' '+bcd_RT[count][1]*2)
         count +=1
         locus.seqProbe = seqWithBcd
-    elif nbrBcd_ByProbe == 4 :
+    elif nbrBcd_RT_ByProbe == 4 :
         for item in locus.seqProbe :
-            seqWithBcd.append(barcodes[count][1]*2+' '+ item +' '+barcodes[count][1]*2)
+            seqWithBcd.append(bcd_RT[count][1]*2+' '+ item +' '+bcd_RT[count][1]*2)
         count +=1
         locus.seqProbe = seqWithBcd
-    elif nbrBcd_ByProbe == 5 :
+    elif nbrBcd_RT_ByProbe == 5 :
         for item in locus.seqProbe :
-            seqWithBcd.append(barcodes[count][1]*3+' '+ item +' '+barcodes[count][1]*2)
+            seqWithBcd.append(bcd_RT[count][1]*3+' '+ item +' '+bcd_RT[count][1]*2)
         count +=1
         locus.seqProbe = seqWithBcd
     
@@ -220,9 +220,9 @@ parameters['startLib']=startLib
 parameters['endLib']=startLib+(resolution*nbrLociTotal)
 parameters['nbrLociTotal']=nbrLociTotal
 parameters['nbrProbeByLocus']=nbrProbeByLocus
-parameters['nbrBcd_ByProbe']=nbrBcd_ByProbe
+parameters['nbrBcd_RT_ByProbe']=nbrBcd_RT_ByProbe
 parameters['PrimerU']=PrimerU
-parameters['barcodeFile']=barcodeFile
+parameters['bcd_TR_File']=bcd_RT_File
 parameters['primerUnivFile']=primerUnivFile
 
 parametersFilePath = pathResultFolder + os.sep + '4-OutputParameters.json'

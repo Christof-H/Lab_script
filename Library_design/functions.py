@@ -45,7 +45,7 @@ def FormatFile(path, out_name, file_type, split_list='', replace_list='') :
                     for x in replace_list :
                        newline = newline.replace(x,"")
                     out_name.append(newline)
-            elif file_type == 'barcode':
+            elif file_type == 'bcd_RT':
                 newline = line
                 for x in replace_list :
                     newline = newline.replace(x,"")
