@@ -22,6 +22,16 @@
 (ex: '/mnt/PALM_dataserv/DATA/Commun/genomes/dm6/OligoMiner/dm6_balanced')  
 - ChromosomeFile: string = Name of the file containing the sequences homologous to the genomic DNA (ex: 'chr2L.bed')  
 
+### Run script:
+
+Open a terminal in the current directory
+
+Command to run the script:
+
+```bash
+$ python3 Classical_Library_Design.py 
+```
+
 
 
 
