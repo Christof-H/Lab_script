@@ -10,40 +10,46 @@ avec 1 bcd/RT différent par région différente (avec le choix possible de bcd/
 sonde primaire de 2 à 5 pour le même bcd/RT)
 
 """
-import os, glob
+import os, json, sys
 
-###-------------------PARAMETRES DE LA LIBRAIRIE------------------------
+###-------------------IMPORTATION DES PARAMETRES DE LA LIBRAIRIE------------------------
 
-chromosome = 'chr2L_original' #'chr2L' or 'chr2R' or 'chr3L' or 'chrX' or 'ChrY'.....
-resolution = 3000 # Taille des loci en nucléotides
-startLib = 16411158 # Coordonnée génomique du début du 1er locus
-nbrProbeByLocus = 45 # nombre de sondes primaires par locus
-nbrLociTotal = 22 # nombre de loci au total
-PrimerU = 'primer1' # choix du couple de primers universels 'primer1', 'primer2' ou 'primer3'....
-nbrBcd_RT_ByProbe = 3 # Nbre de même barcode par sonde primaire max=5
+rootFolder = os.getcwd()
 
-###--------CREATION DES CHEMINS D'ACCES POUR LES FICHIERS-----------
-#chemin d'accès pour le dossier Combinatorial_Library_Design
-folderChromosome = '/mnt/PALM_dataserv/DATA/Commun/genomes/dm3/OligoMiner/dm3_32nt'
-rootFolder = '/home/christophe/Documents/Repositories/Lab_script/Library_design'
-chromosomeFile = chromosome + '.bed'
-bcd_RT_File = 'List_RT.csv' # Choix entre 'Barcodes.csv' ou 'List_RT.csv'
+
+jsonFile = 'input_parameters.json'
+jsonPath = rootFolder + os.sep + jsonFile
+with open(jsonPath, mode='r') as file:
+    input_parameters = json.load(file)
+
+
+chromosomeFile = input_parameters["ChromosomeFile"]
+chromosomeFolder = input_parameters["ChromosomeFolder"]
+resolution = input_parameters["resolution"]
+startLib = input_parameters["startLib"]
+endLib = input_parameters["endLib"]
+nbrLociTotal = input_parameters["nbrLociTotal"]
+nbrProbeByLocus = input_parameters["nbrProbeByLocus"]
+nbrBcd_RT_ByProbe = input_parameters["nbrBcd_RT_ByProbe"]
+PrimerU = input_parameters["PrimerU"]
+bcd_RT_File = input_parameters["bcd_RT_File"]
+
+
+
+
+
 primerUnivFile = 'Primer_univ.csv'
 
 bcd_RT_Path = rootFolder + os.sep + bcd_RT_File
-primaryPath = folderChromosome + os.sep + chromosomeFile
+primaryPath = chromosomeFolder + os.sep + chromosomeFile
 primerUnivPath = rootFolder + os.sep + primerUnivFile
 
-os.chdir(rootFolder)
+
 
 ###-------------------CREATION DU DOSSIER RESULTAT----------------------
-resultFolder = os.path.expanduser('~/Python_Results')
-Lib_Design_Folder = 'Library_Design_Diff'
-pathResultFolder= resultFolder+ os.sep + Lib_Design_Folder
-if not os.path.exists(resultFolder):
+resultFolder = rootFolder + os.sep + 'Library_Design_Results'
+if not os.path.exists(resultFolder):    
     os.mkdir(resultFolder)
-if not os.path.exists(pathResultFolder):    
-    os.mkdir(pathResultFolder)
 
 ###-----------VERIFICATION DE LA PRESENCE DE TOUS LES FICHIERS----------
 
@@ -52,7 +58,7 @@ if not os.path.exists(pathResultFolder):
 
 #%%-----------------FORMATAGE DES FICHIERS EN VARIABLES-------------------
 from functions import FormatFile
-import sys
+
 
 # Ouverture et formatage des barcodes dans la variable barcodes :
 replace_bcd_RT =['\n']
@@ -76,9 +82,10 @@ FormatFile (primerUnivPath, primerUniv, 'primer',split_list=split_primer,replace
 print('-'*70)
 print('listSeqGenomic =', listSeqGenomic[0])
 print('-'*70)
-print('barcodes =', bcd_RT[:2])
+print('bcd_RT =', bcd_RT[:2])
 print('-'*70)
 print('primerUniv = ', 'primer1 =', primerUniv['primer1'])
+print('-'*70)
 
 #%%----REMPLISSAGE DES LOCUS (Primers Univ, start, end, Seq DNA genomic)-------
 from functions import LocusDataClass
@@ -96,7 +103,7 @@ endPositions = [startLib + (x+1)*resolution for x in range(nbrLociTotal)]
 # Remplissage de la classe LocusDataClass avec tous les Loci nécécesaires
 total_locus = list()
 for i, start, end in zip(range(nbrLociTotal),startPositions,endPositions):
-  total_locus.append(LocusDataClass(locusN=i+1, chrName=chromosome, startSeq=start, endSeq=end, primers_Univ = primer))
+  total_locus.append(LocusDataClass(locusN=i+1, chrName=chromosomeFile.split('.')[0], startSeq=start, endSeq=end, primers_Univ = primer))
 
 
 # Attribution des sequences d'ADN complémentaires sondes primaires par locus en fonction des coordonnées génomiques
@@ -118,7 +125,7 @@ for locus in total_locus :
 locus = total_locus[0].__dict__
 [print(x,':',locus[x]) for x in locus.keys()]
 
-#%%COMPLETION DES SEQUENCES PRIMAIRES AVEC BARCODES ET PRIMERS UNIVERSELS
+#%%COMPLETION DES SEQUENCES PRIMAIRES AVEC BARCODES ou RT, ET PRIMERS UNIVERSELS
 
 import copy
 # Insertion des binding sites pour les barcodes des loci selon le schéma suivant :
@@ -182,6 +189,14 @@ print("exemple de séquences primaires :")
 print(total_locus[0].seqProbe[:3])
 
 #%%----------ECRITURE DES DIFFERENTS FICHIERS RESULTATS---------------------            
+#Cr&ation du dossier daté pour différentier les différents librairies dessinées
+import datetime as dt
+date_now = dt.datetime.now().strftime("%Y%m%d_%H%M")
+
+
+pathResultFolder = resultFolder + os.sep + date_now
+os.mkdir(pathResultFolder)
+
 
 #fichier détaillé avec information et séquences : Library_details
 resultDetails = pathResultFolder+os.sep+'1_Library_details.txt'
@@ -210,11 +225,14 @@ with open (Summary, 'w') as file :
 
 # Sauvegarde des parametres ayant servis pour générer la bibliothèque sous 
 # forme d'un fichier.json
-from functions import SaveJson
 
+parametersFilePath = pathResultFolder + os.sep + '4-OutputParameters.json'
+
+#Récupérartion des paramètres
 parameters = {}
 parameters['Script_Name']='Classical_Library_Design.py'
-parameters['chromosomeFile']=chromosomeFile
+parameters['ChromosomeFile']=chromosomeFile
+parameters['ChromosomeFolder']=chromosomeFolder
 parameters['resolution']=resolution
 parameters['startLib']=startLib
 parameters['endLib']=startLib+(resolution*nbrLociTotal)
@@ -225,9 +243,12 @@ parameters['PrimerU']=PrimerU
 parameters['bcd_TR_File']=bcd_RT_File
 parameters['primerUnivFile']=primerUnivFile
 
-parametersFilePath = pathResultFolder + os.sep + '4-OutputParameters.json'
-
-SaveJson(parametersFilePath,parameters)
 
 
 
+# écriture du fichier json.
+with open(parametersFilePath, mode="w") as file :
+    json.dump(parameters, file, indent=4)
+
+print('-'*40, '\n')
+print(f'All files concerning your library design are saved in {pathResultFolder}/')
