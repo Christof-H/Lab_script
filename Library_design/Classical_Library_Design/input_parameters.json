@@ -3,7 +3,6 @@
     "ChromosomeFolder": "/mnt/PALM_dataserv/DATA/Commun/genomes/dm6/OligoMiner/dm6_balanced",
     "resolution": 20000,
     "startLib": 16000000,
-    "endLib": 16600000,
     "nbrLociTotal": 20,
     "nbrProbeByLocus": 150,
     "nbrBcd_RT_ByProbe": 3,

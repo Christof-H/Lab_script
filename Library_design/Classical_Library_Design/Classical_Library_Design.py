@@ -27,7 +27,6 @@ chromosomeFile = input_parameters["ChromosomeFile"]
 chromosomeFolder = input_parameters["ChromosomeFolder"]
 resolution = input_parameters["resolution"]
 startLib = input_parameters["startLib"]
-endLib = input_parameters["endLib"]
 nbrLociTotal = input_parameters["nbrLociTotal"]
 nbrProbeByLocus = input_parameters["nbrProbeByLocus"]
 nbrBcd_RT_ByProbe = input_parameters["nbrBcd_RT_ByProbe"]
@@ -35,7 +34,7 @@ PrimerU = input_parameters["PrimerU"]
 bcd_RT_File = input_parameters["bcd_RT_File"]
 
 
-
+endLib = startLib + (nbrLociTotal * resolution)
 
 
 primerUnivFile = 'Primer_univ.csv'
