@@ -52,10 +52,10 @@ If the size of the primary probes varies by more than 10%, the script will perfo
 
 - Writing the different files in a result folder:  
 
-1_Library_details.txt: All primary probe sequences are grouped by locus, with corresponding information (start-end-Bcr/RT). Each primary probe is subdivided into distinct parts in order to separate the different regions (primerU, Bcd/RT, sequence homologous to genomic DNA)  
+**1_Library_details.txt**: All primary probe sequences are grouped by locus, with corresponding information (start-end-Bcr/RT). Each primary probe is subdivided into distinct parts in order to separate the different regions (primerU, Bcd/RT, sequence homologous to genomic DNA)  
 
-2_Full_sequence_Only.txt: File containing all the sequences of the raw primary probes (without any information). This is the file that is used for ordering the library.  
+**2_Full_sequence_Only.txt**: File containing all the sequences of the raw primary probes (without any information). This is the file that is used for ordering the library.  
 
-3_Library_Summary.csv: Table summarizing all the information about each locus (locus number, start, end, Bcd/RT, PU.fw, PU.rev, number of probes per locus...)   
+**3_Library_Summary.csv**: Table summarizing all the information about each locus (locus number, start, end, Bcd/RT, PU.fw, PU.rev, number of probes per locus...)   
 
-4-OutputParameters.json: Json file containing all the parameters that have been used to produce the library, in order to have a backup if needed later.  
+**4-OutputParameters.json**: Json file containing all the parameters that have been used to produce the library, in order to have a backup if needed later.  
