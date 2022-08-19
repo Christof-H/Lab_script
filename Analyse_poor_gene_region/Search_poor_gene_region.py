@@ -18,32 +18,62 @@ rootFolder = "/mnt/PALM_dataserv/DATA/Commun/genomes/RefSeqs"
 exonFile = "dm6.ensGene_exon.bed"
 
 list_exon_file = rootFolder + os.sep + exonFile
+list_exon =[]
+list_exon_sorted = []
+
 #Size of the unanalyzed region extending from the beginning of the telomere or centromere
 size = 3000000
 poor_gene_coord = []
 
+# Creation of the exon list from the exonFile (dm6.ensGene_exon.bed)
 with open(list_exon_file, mode='r') as file:
-    previous_pos = None
     for line in file:
-        if previous_pos == None and int(line.split('\t')[1]) >= size:
-            previous_pos = line.split('\t')
-            continue
-        elif previous_pos != None:
-            next_pos = line.split('\t')
-            if previous_pos[0] == next_pos[0]:
-                diff = (int(next_pos[1]) - int(previous_pos[2]))
-                if diff >= 50000 and previous_pos[3] != next_pos[3]:
-                    temp = {'Region':{}}
-                    temp['Region']['Chr'] = previous_pos[0]
-                    temp['Region']['length'] = diff
-                    temp['Region']['Start'] = int(previous_pos[2]) 
-                    temp['Region']['End'] = int(next_pos[1])
-                    temp['Region']['previousGene'] = previous_pos[3] 
-                    temp['Region']['NextGene'] = next_pos[3]
-                    poor_gene_coord.append(temp)
-                previous_pos = next_pos.copy()
-            elif previous_pos[0] != next_pos[0] and int(line.split('\t')[1]) >= size:
-                previous_pos = next_pos.copy()
+        lineSplit = line.split('\t')[:4]
+        lineSplit[1] = int(lineSplit[1])
+        lineSplit[2] = int(lineSplit[2])
+        list_exon.append(lineSplit)
+        
+# Remove of duplicate exons from the list_exon (du to different gene isoform)
+# unique_list_exon = [item for (count, item) in enumerate(list_exon) if item not in list_exon[:count]]
+tempSet = set(tuple(i) for i in list_exon)
+list_exon_uniq = [list(i) for i in tempSet]
+
+# Sort the exon list by chromosome name and by coordinates (not by gene name) : x[1]
+chrList = ['chr2L', 'chr2R', 'chr3L', 'chr3R', 'chr4', 'chrY', 'chrX']
+for chromosom in chrList:
+    list_exon_by_chr_temp = [x for x in list_exon_uniq if x[0] == chromosom]
+    list_exon_by_chr_temp.sort(key=lambda x: x[1])
+    list_exon_sorted.extend(list_exon_by_chr_temp)
+
+# Search for a region where 2 exons (from 2 different gene) are 50kb apart
+previous_exon = None
+for exon in list_exon_sorted:
+    if previous_exon == None and exon[1] >= size:
+        previous_exon = exon
+        continue
+    elif previous_exon != None:
+        next_exon = exon
+        if previous_exon[0] == next_exon[0]:
+            diff = next_exon[1] - previous_exon[2]
+            if diff >= 50000 and previous_exon[3] != next_exon[3]:
+                temp = {'Region':{}}
+                temp['Region']['Chr'] = previous_exon[0]
+                temp['Region']['length'] = diff
+                temp['Region']['Start'] = previous_exon[2] 
+                temp['Region']['End'] = next_exon[1]
+                temp['Region']['previousGene'] = previous_exon[3] 
+                temp['Region']['NextGene'] = next_exon[3]
+                poor_gene_coord.append(temp)
+            previous_exon = next_exon.copy()
+        elif previous_exon[0] != next_exon[0] and exon[1] >= size:
+            previous_exon = next_exon.copy()
+
+
+
+
+
+
+
 
 
 # Import Physical Domain form Sexton paper
