@@ -70,6 +70,8 @@ FormatFile (bcd_RT_Path, bcd_RT, 'bcd_RT',split_list=split_bcd_RT, replace_list=
 listSeqGenomic = list()
 split_primary = ['\t']
 FormatFile (primaryPath, listSeqGenomic, 'primaryProbe',split_list=split_primary)
+# Sort list of primary probes by their coordinates (element[0]):
+listSeqGenomic.sort(key=lambda x: int(x[0]))
 
 # Ouverture et formatage des primers universels dans la variable primerUniv :
 primerUniv = dict()
