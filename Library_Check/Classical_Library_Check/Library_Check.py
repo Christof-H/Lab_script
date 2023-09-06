@@ -65,10 +65,10 @@ import os
 #Folder contenant le fichier à vérifier
 rootFolder = '/home/christophe/Téléchargements'
 #Folder ou se trouve ce sript, avec avec les fichiers barcode, primer_F, primer_R.....
-rootFolderScript = '/home/christophe/Documents/Informatique/Python/Scripts/Python_Script_Tof_git/Library_Check'
+rootFolderScript = '/home/christophe/Documents/Informatique/Python/Scripts/Aeffacer/Classical_Library_Check/'
 
 
-libraryFile = 'Merged_library_September_2021.txt'
+libraryFile = 'Adgrb12470probes_finalresult.dat'
 barcodeFile = 'seq_brcd_on_primary.csv'
 pu_fwFile = 'seq_primer_univ_fw.csv'
 pu_RevFile = 'seq_primer_univ_rev.csv'

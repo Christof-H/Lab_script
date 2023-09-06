@@ -24,7 +24,7 @@
 
 ### Run script:
 
-Open a terminal in the current directory
+Open a terminal at the script location : Classical_Library_Design.
 
 Command to run the script:
 

@@ -1,10 +1,10 @@
 {
-    "ChromosomeFile": "chr2L.bed",
-    "ChromosomeFolder": "/mnt/PALM_dataserv/DATA/Commun/genomes/dm6/OligoMiner/dm6_balanced",
+    "ChromosomeFile": "chr1.bed",
+    "ChromosomeFolder": "/mnt/PALM_dataserv/DATA/Commun/genomes/Mouse/OligoMiner/Mouse_balanced",
     "resolution": 20000,
-    "startLib": 16000000,
-    "nbrLociTotal": 20,
-    "nbrProbeByLocus": 150,
+    "startLib": 24009111,
+    "nbrLociTotal": 25,
+    "nbrProbeByLocus": 500,
     "nbrBcd_RT_ByProbe": 3,
     "PrimerU": "primer1",
     "bcd_RT_File": "List_RT.csv"
