@@ -63,12 +63,12 @@ Volumes:
 import os
 
 #Folder contenant le fichier à vérifier
-rootFolder = '/home/christophe/Bureau/library/Library_Design_Results'
+rootFolder = '/home/christophe/Bureau/Library_Check/david/'
 #Folder ou se trouve ce sript, avec avec les fichiers barcode, primer_F, primer_R.....
 rootFolderScript = '/home/christophe/Bureau/Library_Check/'
 
 
-libraryFile = 'libfull.txt'
+libraryFile = 'libraries merged_Kit locus.txt'
 barcodeFile = 'seq_brcd_on_primary.csv'
 pu_fwFile = 'seq_primer_univ_fw.csv'
 pu_RevFile = 'seq_primer_univ_rev.csv'
