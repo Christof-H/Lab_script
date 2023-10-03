@@ -63,12 +63,12 @@ Volumes:
 import os
 
 #Folder contenant le fichier à vérifier
-rootFolder = '/home/christophe/Téléchargements'
+rootFolder = '/home/christophe/Bureau/library/Library_Design_Results'
 #Folder ou se trouve ce sript, avec avec les fichiers barcode, primer_F, primer_R.....
-rootFolderScript = '/home/christophe/Documents/Informatique/Python/Scripts/Aeffacer/Classical_Library_Check/'
+rootFolderScript = '/home/christophe/Bureau/Library_Check/'
 
 
-libraryFile = 'Adgrb12470probes_finalresult.dat'
+libraryFile = 'libfull.txt'
 barcodeFile = 'seq_brcd_on_primary.csv'
 pu_fwFile = 'seq_primer_univ_fw.csv'
 pu_RevFile = 'seq_primer_univ_rev.csv'
@@ -302,7 +302,8 @@ with open(SummaryFilePath, 'w') as file :
     for i, (key,value) in enumerate(libraries_F_R_B.items(),1) :
         list_key = key.split(':')
         file.write(str(i)+','+list_key[0]+','+list_key[1]+','+list_key[2]+','+str(len(value))+' sondes primaires'+'\n')
-
+print('-'*40, '\n')
+print(f'The summary file of the library analysis has been saved here: {SummaryFilePath}')
 
 #%% recupère la première et dernière sequence des sondes primaires de chaque 
 # locus pour les mettre dans un dictionnaire (first_last_seq_probe)
